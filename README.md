@@ -1,4 +1,4 @@
-# GoodWeather New
+# GoodWeather
 
 ## New-1
 
