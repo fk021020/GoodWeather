@@ -7,8 +7,12 @@ import android.util.Log;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.fk.goodweather.adapter.DailyAdapter;
+import com.fk.goodweather.bean.DailyResponse;
 import com.baidu.location.BDLocation;
+import com.fk.goodweather.utils.EasyDate;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.fk.goodweather.bean.NowResponse;
@@ -19,6 +23,7 @@ import com.fk.goodweather.location.MyLocationListener;
 import com.fk.goodweather.viewmodel.MainViewModel;
 import com.fk.library.base.NetworkActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends NetworkActivity<ActivityMainBinding> implements LocationCallback {
@@ -32,6 +37,10 @@ public class MainActivity extends NetworkActivity<ActivityMainBinding> implement
     private final MyLocationListener myListener = new MyLocationListener();
 
     private MainViewModel viewModel;
+
+    //天气预报数据和适配器
+    private final List<DailyResponse.DailyBean> dailyBeanList = new ArrayList<>();
+    private final DailyAdapter dailyAdapter = new DailyAdapter(dailyBeanList);
 
     /**
      * 注册意图
@@ -57,7 +66,18 @@ public class MainActivity extends NetworkActivity<ActivityMainBinding> implement
         setFullScreenImmersion();
         initLocation();
         requestPermission();
+        initView();
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
+    }
+
+    /**
+     * 初始化页面视图
+     */
+    private void initView() {
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        binding.recyclerView.setAdapter(dailyAdapter);
+//        binding.rvLifestyle.setLayoutManager(new LinearLayoutManager(this));
+//        binding.rvLifestyle.setAdapter(lifestyleAdapter);
     }
 
     /**
@@ -75,6 +95,8 @@ public class MainActivity extends NetworkActivity<ActivityMainBinding> implement
                     if (id != null) {
                         //通过城市ID查询城市实时天气
                         viewModel.nowWeather(id);
+                        //通过城市ID查询天气预报
+                        viewModel.dailyWeather(id);
                     }
                 }
             });
@@ -84,7 +106,19 @@ public class MainActivity extends NetworkActivity<ActivityMainBinding> implement
                 if (now != null) {
                     binding.tvInfo.setText(now.getText());
                     binding.tvTemp.setText(now.getTemp());
-                    binding.tvUpdateTime.setText("最近更新时间：" + nowResponse.getUpdateTime());
+                    binding.tvUpdateTime.setText
+                            ("最近更新时间：" + EasyDate.greenwichupToSimpleTime(nowResponse.getUpdateTime()));
+                }
+            });
+            //天气预报返回
+            viewModel.dailyResponseMutableLiveData.observe(this, dailyResponse -> {
+                List<DailyResponse.DailyBean> daily = dailyResponse.getDaily();
+                if (daily != null) {
+                    if (dailyBeanList.size() > 0) {
+                        dailyBeanList.clear();
+                    }
+                    dailyBeanList.addAll(daily);
+                    dailyAdapter.notifyDataSetChanged();
                 }
             });
             //错误信息返回

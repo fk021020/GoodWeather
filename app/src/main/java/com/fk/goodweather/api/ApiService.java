@@ -2,6 +2,8 @@ package com.fk.goodweather.api;
 
 import static com.fk.goodweather.Constant.API_KEY;
 
+import com.fk.goodweather.bean.DailyResponse;
+import com.fk.goodweather.bean.LifestyleResponse;
 import com.fk.goodweather.bean.NowResponse;
 import com.fk.goodweather.bean.SearchCityResponse;
 
@@ -32,5 +34,27 @@ public interface ApiService {
      */
     @GET("/v7/weather/now?key=" + API_KEY)
     Observable<NowResponse> nowWeather(@Query("location") String location);
+
+    /**
+     * 天气预报  (免费订阅)最多可以获得7天的数据
+     *
+     * @param location 城市id
+     * @return 返回天气预报数据 DailyResponse
+     */
+    @GET("/v7/weather/7d?key=" + API_KEY)
+    Observable<DailyResponse> dailyWeather(@Query("location") String location);
+
+    /**
+     * 生活指数
+     *
+     * @param type     可以控制定向获取那几项数据 全部数据 0, 运动指数	1 ，洗车指数	2 ，穿衣指数	3 ，
+     *                 钓鱼指数	4 ，紫外线指数  5 ，旅游指数  6，花粉过敏指数	7，舒适度指数	8，
+     *                 感冒指数	9 ，空气污染扩散条件指数	10 ，空调开启指数	 11 ，太阳镜指数	12 ，
+     *                 化妆指数  13 ，晾晒指数  14 ，交通指数  15 ，防晒指数	16
+     * @param location 城市id
+     * @return LifestyleResponse 生活指数数据返回
+     */
+    @GET("/v7/indices/1d?key=" + API_KEY)
+    Observable<LifestyleResponse> lifestyle(@Query("type") String type, @Query("location") String location);
 
 }
