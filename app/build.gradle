@@ -23,11 +23,12 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     buildFeatures {
         viewBinding true    //开启ViewBinding
+        buildConfig = true //开启buildConfig
     }
     //加载so文件
     sourceSets{
@@ -49,7 +50,7 @@ dependencies {
     androidTestImplementation libs.espresso.core
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    //OKHttp
-    implementation 'com.squareup.okhttp3:okhttp:3.14.9'
+    //依赖子模块
+    implementation project(path: ':library')
 
 }
