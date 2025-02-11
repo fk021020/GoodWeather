@@ -53,4 +53,18 @@ dependencies {
     //依赖子模块
     implementation project(path: ':library')
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+
+
+    implementation 'com.github.jeasonlzy.okhttp-OkGo:okgo:v3.0.4'
+
+    //Room数据库
+    implementation 'androidx.room:room-runtime:2.4.2'
+    annotationProcessor 'androidx.room:room-compiler:2.4.2'
+    //Room 支持RxJava2
+    implementation 'androidx.room:room-rxjava2:2.4.2'
+    //腾讯MMKV
+    implementation 'com.tencent:mmkv:1.2.11'
+    //Gson
+    implementation 'com.google.code.gson:gson:2.9.0'
+
 }

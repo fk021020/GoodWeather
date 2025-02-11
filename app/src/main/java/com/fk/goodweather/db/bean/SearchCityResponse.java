@@ -1,4 +1,4 @@
-package com.fk.goodweather.bean;
+package com.fk.goodweather.db.bean;
 
 import java.util.List;
 

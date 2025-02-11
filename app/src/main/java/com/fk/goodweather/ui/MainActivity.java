@@ -1,22 +1,27 @@
-package com.fk.goodweather;
+package com.fk.goodweather.ui;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.util.Log;
+import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.fk.goodweather.adapter.DailyAdapter;
-import com.fk.goodweather.bean.DailyResponse;
+import com.fk.goodweather.R;
+import com.fk.goodweather.SearchActivity;
+import com.fk.goodweather.ui.adapter.DailyAdapter;
+import com.fk.goodweather.db.bean.DailyResponse;
 import com.baidu.location.BDLocation;
 import com.fk.goodweather.utils.EasyDate;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
-import com.fk.goodweather.bean.NowResponse;
-import com.fk.goodweather.bean.SearchCityResponse;
+import com.fk.goodweather.utils.CityDialog;
+import com.fk.goodweather.db.bean.NowResponse;
+import com.fk.goodweather.db.bean.SearchCityResponse;
 import com.fk.goodweather.databinding.ActivityMainBinding;
 import com.fk.goodweather.location.LocationCallback;
 import com.fk.goodweather.location.MyLocationListener;
@@ -26,7 +31,7 @@ import com.fk.library.base.NetworkActivity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends NetworkActivity<ActivityMainBinding> implements LocationCallback {
+public class MainActivity extends NetworkActivity<ActivityMainBinding> implements LocationCallback, CityDialog.SelectedCityCallback {
 
     //权限数组
     private final String[] permissions = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -41,6 +46,9 @@ public class MainActivity extends NetworkActivity<ActivityMainBinding> implement
     //天气预报数据和适配器
     private final List<DailyResponse.DailyBean> dailyBeanList = new ArrayList<>();
     private final DailyAdapter dailyAdapter = new DailyAdapter(dailyBeanList);
+
+    //城市弹窗
+    private CityDialog cityDialog;
 
     /**
      * 注册意图
@@ -63,18 +71,29 @@ public class MainActivity extends NetworkActivity<ActivityMainBinding> implement
      */
     @Override
     protected void onCreate() {
+        //沉浸式
         setFullScreenImmersion();
+        //初始化定位
         initLocation();
+        //请求权限
         requestPermission();
+        //初始化视图
         initView();
+        //绑定ViewModel
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
+        //获取城市数据
+        viewModel.getAllCity();
+        //设置监听
+        setListener();
     }
 
     /**
      * 初始化页面视图
      */
     private void initView() {
-        binding.recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        // 创建一个水平方向的 LinearLayoutManager
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        binding.recyclerView.setLayoutManager(layoutManager);
         binding.recyclerView.setAdapter(dailyAdapter);
 //        binding.rvLifestyle.setLayoutManager(new LinearLayoutManager(this));
 //        binding.rvLifestyle.setAdapter(lifestyleAdapter);
@@ -121,9 +140,28 @@ public class MainActivity extends NetworkActivity<ActivityMainBinding> implement
                     dailyAdapter.notifyDataSetChanged();
                 }
             });
+            //获取本地城市数据返回
+            viewModel.cityMutableLiveData.observe(this, provinces -> {
+                //城市弹窗初始化
+                cityDialog = CityDialog.getInstance(MainActivity.this, provinces);
+                cityDialog.setSelectedCityCallback(this);
+            });
             //错误信息返回
             viewModel.failed.observe(this, this::showLongMsg);
         }
+    }
+
+    /**
+     * 设置监听
+     */
+    private void setListener() {
+        //搜索
+        findViewById(R.id.btn_search).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivityForResult(new Intent(MainActivity.this, SearchActivity.class), 1000);
+            }
+        });
     }
 
     /**
@@ -192,5 +230,16 @@ public class MainActivity extends NetworkActivity<ActivityMainBinding> implement
             Log.e("TAG", "district: " + district);
         }
     }
-
+    /**
+     * 选中城市
+     *
+     * @param cityName 城市名称
+     */
+    @Override
+    public void selectedCity(String cityName) {
+        //搜索城市
+        viewModel.searchCity(cityName);
+        //显示所选城市
+        binding.tvCityName.setText(cityName);
+    }
 }

@@ -1,4 +1,4 @@
-package com.fk.goodweather.adapter;
+package com.fk.goodweather.ui.adapter;
 
 import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.fk.goodweather.bean.DailyResponse;
+import com.fk.goodweather.db.bean.DailyResponse;
 import com.fk.goodweather.databinding.ItemDailyRvBinding;
 import com.fk.goodweather.utils.EasyDate;
 import com.fk.goodweather.utils.WeatherUtil;
